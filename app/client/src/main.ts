@@ -150,6 +150,19 @@ function displayResults(response: QueryResponse, query: string) {
   });
 }
 
+// Helper function to format cell values for display
+function formatCellValue(value: any): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  if (typeof value === 'object' || Array.isArray(value)) {
+    return JSON.stringify(value, null, 2);
+  }
+
+  return String(value);
+}
+
 // Create results table
 function createResultsTable(results: Record<string, any>[], columns: string[]): HTMLTableElement {
   const table = document.createElement('table');
@@ -172,7 +185,7 @@ function createResultsTable(results: Record<string, any>[], columns: string[]): 
     const tr = document.createElement('tr');
     columns.forEach(col => {
       const td = document.createElement('td');
-      td.textContent = row[col] !== null ? String(row[col]) : '';
+      td.textContent = formatCellValue(row[col]);
       tr.appendChild(td);
     });
     tbody.appendChild(tr);

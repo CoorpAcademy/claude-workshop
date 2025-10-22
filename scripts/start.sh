@@ -11,11 +11,27 @@ echo -e "${GREEN}Starting Natural Language MongoDB Query Interface...${NC}\n"
 # Check if .env exists in backend
 if [ ! -f "app/server/.env" ]; then
     echo -e "${RED}Error: app/server/.env not found${NC}"
-    echo "Please create it from app/server/.env.sample and add your API keys"
+    echo "This file is required for the FastAPI application."
+    echo ""
+    echo "To create it, run: ./.claude/scripts/copy_dot_env.sh"
+    echo "Or manually: cp app/server/.env.sample app/server/.env"
+    echo ""
+    echo "Then edit app/server/.env and add your ANTHROPIC_API_KEY"
+    echo "See README.md 'Environment Configuration' section for details"
     exit 1
 fi
 
-echo -e "${GREEN}✓${NC} Environment file found"
+echo -e "${GREEN}✓${NC} Application environment file found (app/server/.env)"
+
+# Check for optional workshop features
+if [ ! -f ".env" ]; then
+    echo -e "${YELLOW}ℹ${NC}  Optional workshop features not configured (root .env missing)"
+    echo "   This is OK - the app will run without Claude Code workshop features"
+    echo "   To enable hooks/MCP: cp .env.sample .env (see README.md)"
+    echo ""
+else
+    echo -e "${GREEN}✓${NC} Workshop features configured (root .env found)"
+fi
 
 # Function to cleanup background processes on exit
 cleanup() {

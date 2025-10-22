@@ -1,1 +1,1 @@
-sh ./scripts/start.sh 300s
+sh ./scripts/start.sh

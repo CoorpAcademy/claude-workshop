@@ -4,7 +4,8 @@ import pandas as pd
 import os
 import io
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from bson import ObjectId
 from core.file_processor import convert_csv_to_mongodb, convert_json_to_mongodb
 
 
@@ -147,3 +148,69 @@ class TestFileProcessor:
             convert_json_to_mongodb(json_data, table_name)
 
         assert "JSON array is empty" in str(exc_info.value)
+
+    @patch('core.file_processor.insert_documents')
+    @patch('core.file_processor.collection_exists')
+    def test_csv_upload_converts_objectids_to_strings(self, mock_collection_exists, mock_insert_documents):
+        """Test that CSV upload converts ObjectId _id fields to strings for JSON serialization"""
+        mock_collection_exists.return_value = False
+
+        # Mock insert_documents to simulate MongoDB adding ObjectId _id fields
+        def mock_insert_with_objectids(collection_name, documents):
+            for doc in documents:
+                doc['_id'] = ObjectId()
+            return len(documents)
+
+        mock_insert_documents.side_effect = mock_insert_with_objectids
+
+        # Create test CSV data
+        csv_data = b"name,age,city\nJohn,25,NYC\nJane,30,LA"
+
+        result = convert_csv_to_mongodb(csv_data, "test_collection")
+
+        # Verify sample_data contains string _id fields, not ObjectId instances
+        assert 'sample_data' in result
+        assert len(result['sample_data']) > 0
+
+        for doc in result['sample_data']:
+            if '_id' in doc:
+                # _id should be a string, not an ObjectId
+                assert isinstance(doc['_id'], str)
+                assert not isinstance(doc['_id'], ObjectId)
+
+        # Verify the entire result is JSON-serializable
+        json_str = json.dumps(result)
+        assert json_str is not None
+
+    @patch('core.file_processor.insert_documents')
+    @patch('core.file_processor.collection_exists')
+    def test_json_upload_converts_objectids_to_strings(self, mock_collection_exists, mock_insert_documents):
+        """Test that JSON upload converts ObjectId _id fields to strings for JSON serialization"""
+        mock_collection_exists.return_value = False
+
+        # Mock insert_documents to simulate MongoDB adding ObjectId _id fields
+        def mock_insert_with_objectids(collection_name, documents):
+            for doc in documents:
+                doc['_id'] = ObjectId()
+            return len(documents)
+
+        mock_insert_documents.side_effect = mock_insert_with_objectids
+
+        # Create test JSON data
+        json_data = b'[{"name": "Product1", "price": 100}, {"name": "Product2", "price": 200}]'
+
+        result = convert_json_to_mongodb(json_data, "test_collection")
+
+        # Verify sample_data contains string _id fields, not ObjectId instances
+        assert 'sample_data' in result
+        assert len(result['sample_data']) > 0
+
+        for doc in result['sample_data']:
+            if '_id' in doc:
+                # _id should be a string, not an ObjectId
+                assert isinstance(doc['_id'], str)
+                assert not isinstance(doc['_id'], ObjectId)
+
+        # Verify the entire result is JSON-serializable
+        json_str = json.dumps(result)
+        assert json_str is not None

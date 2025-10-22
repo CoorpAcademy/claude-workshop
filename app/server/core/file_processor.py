@@ -5,7 +5,7 @@ import re
 import os
 from typing import Dict, Any, List
 from .mongo_security import validate_collection_name, MongoSecurityError
-from .mongo_processor import insert_documents, drop_collection, get_mongodb_connection
+from .mongo_processor import insert_documents, drop_collection, get_mongodb_connection, convert_objectids_to_strings
 
 
 def sanitize_collection_name(collection_name: str) -> str:
@@ -134,7 +134,7 @@ def convert_csv_to_mongodb(csv_content: bytes, collection_name: str) -> Dict[str
         schema = infer_field_types(documents)
 
         # Get sample data (first 5 documents)
-        sample_data = documents[:5]
+        sample_data = [convert_objectids_to_strings(doc) for doc in documents[:5]]
 
         return {
             'collection_name': collection_name,
@@ -197,7 +197,7 @@ def convert_json_to_mongodb(json_content: bytes, collection_name: str) -> Dict[s
         schema = infer_field_types(documents)
 
         # Get sample data (first 5 documents)
-        sample_data = documents[:5]
+        sample_data = [convert_objectids_to_strings(doc) for doc in documents[:5]]
 
         return {
             'collection_name': collection_name,

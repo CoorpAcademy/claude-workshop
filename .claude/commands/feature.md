@@ -24,7 +24,6 @@ Focus on the following files:
 - `app/server/**` - Contains the codebase server.
 - `app/client/**` - Contains the codebase client.
 - `scripts/**` - Contains the scripts to start and stop the server + client.
-- `adws/**` - Contains the AI Developer Workflow (ADW) scripts.
 
 Ignore all other files in the codebase.
 

@@ -12,12 +12,8 @@ echo -e "${BLUE}Stopping Natural Language MongoDB Interface...${NC}"
 echo -e "${GREEN}Killing start.sh processes...${NC}"
 pkill -f "start.sh" 2>/dev/null
 
-# Kill webhook server
-echo -e "${GREEN}Killing webhook server...${NC}"
-pkill -f "trigger_webhook.py" 2>/dev/null
-
-# Kill processes on specific ports
-echo -e "${GREEN}Killing processes on ports 5173, 8000, and 8001...${NC}"
-lsof -ti:5173,8000,8001 | xargs kill -9 2>/dev/null
+# Kill processes on specific ports (frontend, backend)
+echo -e "${GREEN}Killing processes on ports 5173 and 8000...${NC}"
+lsof -ti:5173,8000 | xargs kill -9 2>/dev/null
 
 echo -e "${GREEN}✓ Services stopped successfully!${NC}"

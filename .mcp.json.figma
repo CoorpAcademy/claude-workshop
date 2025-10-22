@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "figma-dev-mode": {
+      "command": "npx",
+      "args": ["-y", "claude-talk-to-figma-mcp@latest"]
+    }
+  }
+}

@@ -25,7 +25,6 @@ Focus on the following files:
 - `README.md` - Contains the project overview and instructions.
 - `app/**` - Contains the codebase client/server.
 - `scripts/**` - Contains the scripts to start and stop the server + client.
-- `adws/**` - Contains the AI Developer Workflow (ADW) scripts.
 
 Ignore all other files in the codebase.
 

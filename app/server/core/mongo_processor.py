@@ -9,6 +9,7 @@ import os
 from typing import Any, Dict, List, Optional
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError, ConnectionFailure, OperationFailure
+from bson import ObjectId
 from dotenv import load_dotenv
 
 from .mongo_security import (
@@ -25,6 +26,31 @@ load_dotenv()
 
 # Global MongoDB client (singleton pattern for connection pooling)
 _mongo_client: Optional[MongoClient] = None
+
+
+def convert_objectids_to_strings(data: Any) -> Any:
+    """
+    Recursively convert all BSON ObjectId instances to strings in a data structure.
+
+    This function traverses dictionaries, lists, and nested structures to find and
+    convert any ObjectId instances to their string representation, making the data
+    JSON-serializable for FastAPI/Pydantic responses.
+
+    Args:
+        data: Any data structure (dict, list, ObjectId, or primitive type)
+
+    Returns:
+        A new data structure with all ObjectIds converted to strings.
+        Primitive types are returned as-is.
+    """
+    if isinstance(data, ObjectId):
+        return str(data)
+    elif isinstance(data, dict):
+        return {key: convert_objectids_to_strings(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [convert_objectids_to_strings(item) for item in data]
+    else:
+        return data
 
 
 def get_mongodb_connection() -> MongoClient:
@@ -120,9 +146,8 @@ def execute_mongodb_query(
         # Convert cursor to list and handle ObjectId serialization
         results = []
         for doc in cursor:
-            # Convert ObjectId to string for JSON serialization
-            if "_id" in doc:
-                doc["_id"] = str(doc["_id"])
+            # Convert all ObjectIds to strings for JSON serialization
+            doc = convert_objectids_to_strings(doc)
             results.append(doc)
 
         return results
@@ -166,10 +191,8 @@ def execute_aggregation_pipeline(
         # Convert cursor to list and handle ObjectId serialization
         results = []
         for doc in cursor:
-            if "_id" in doc:
-                # Handle both ObjectId and other types
-                if hasattr(doc["_id"], "__str__"):
-                    doc["_id"] = str(doc["_id"])
+            # Convert all ObjectIds to strings for JSON serialization
+            doc = convert_objectids_to_strings(doc)
             results.append(doc)
 
         return results
@@ -219,19 +242,14 @@ def get_database_schema() -> Dict[str, Any]:
                     if field_name not in fields:
                         fields[field_name] = {
                             "type": type(field_value).__name__,
-                            "sample": field_value if not field_name == "_id" else str(field_value)
+                            "sample": convert_objectids_to_strings(field_value)
                         }
 
             schema[collection_name] = {
                 "count": collection.count_documents({}),
                 "fields": fields,
-                "sample_data": sample_docs[:3]  # Include first 3 documents as samples
+                "sample_data": [convert_objectids_to_strings(doc) for doc in sample_docs[:3]]
             }
-
-            # Convert ObjectIds in sample data
-            for doc in schema[collection_name]["sample_data"]:
-                if "_id" in doc:
-                    doc["_id"] = str(doc["_id"])
 
         # Detect relationships between collections
         relationships = []

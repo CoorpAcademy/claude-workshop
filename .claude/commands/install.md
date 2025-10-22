@@ -1,25 +1,27 @@
 # Install & Prime
 
 ## Read
-.env.sample (never read .env)
-./app/server/.env.sample (never read .env)
+- README.md (Environment Configuration section)
+- .env.sample (never read .env)
+- ./app/server/.env.sample (never read .env)
 
 ## Read and Execute
 .claude/commands/prime.md
 
 ## Run
-- Remove the existing git remote: `git remote remove origin`
-- Initialize a new git repository: `git init`
-- Run `cp .env.sample .env`
-- Install FE and BE dependencies
-- Run `./scripts/copy_dot_env.sh` to copy the .env file from the tac-2 directory. Note, the tac-2 codebase may not exists, proceed either way.
+
+### Environment Setup
+- Run `./.claude/scripts/copy_dot_env.sh` to setup environment files
+  - This script will create `app/server/.env` (required)
+  - And optionally create root `.env` (for workshop features)
+- The script is interactive and will guide the user through the setup
+
+### Install Dependencies
+- Install backend dependencies: `cd app/server && uv sync --all-extras`
+- Install frontend dependencies: `cd app/client && npm install`
 
 ## Report
-- Output the work you've just done in a concise bullet point list.
-- Instruct the user to fill out the root level ./.env based on .env.sample. 
-- If `./app/server/.env` does not exist, instruct the user to fill out `./app/server/.env` based on `./app/server/.env.sample`
-- Mention: 'To setup your AFK Agent, be sure to update the remote repo url and push to a new repo so you have access to git issues and git prs:
-  ```
-  git remote add origin <your-new-repo-url>
-  git push -u origin main
-  ```'
+- Output the work you've just done in a concise bullet point list
+- Instruct the user to edit `app/server/.env` and add their ANTHROPIC_API_KEY (required)
+- If workshop features were set up, remind them to optionally edit root `.env` for MCP/hooks
+- Reference the README.md "Environment Configuration" section for details about the two-file setup
